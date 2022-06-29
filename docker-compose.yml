@@ -57,32 +57,19 @@ services:
       - "${APP_HTTP_PORT:-8002}:8080"
     expose:
       - 9000
-  mysql:
-    container_name: symfony-starter-db
-    build:
-      context: ./docker/mysql
-      args:
-        - APP_DB_PORT=${APP_DB_PORT}
-    env_file:
-      - parameters.yml.dist
-    environment:
-      - MYSQL_DATABASE=${DATABASE_NAME}
-      - MYSQL_USER=${DATABASE_USER}
-      - MYSQL_PASSWORD=${DATABASE_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD}
-      - MYSQL_ROOT_HOST=%
-    healthcheck:
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "-p${DATABASE_ROOT_PASSWORD}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 50
-    restart: on-failure
+
+  mariadb:
+    image: mariadb
+    restart: always
     volumes:
-      - ./docker/mysql/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
-      - ./docker/mysql/initdb.d:/docker-entrypoint-initdb.d
-      - ~/symfony-starter-mysql:/var/lib/mysql:delegated
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: test
+      MYSQL_DATABASE: database
+      MYSQL_ROOT_PASSWORD: temp
     ports:
-      - "${APP_DB_PORT:-33067}:3306"
+      - "8889:3306"
 
   testfrontend:
     image: "node:10"
