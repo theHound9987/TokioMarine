@@ -1,0 +1,12 @@
+zend_extension = xdebug
+
+[xdebug]
+xdebug.idekey = app.io
+xdebug.mode = debug,develop,trace
+xdebug.discover_client_host = 1
+xdebug.client_host = docker.for.mac.localhost
+xdebug.client_port = 9003
+xdebug.show_error_trace = 1
+xdebug.cli_color = 1
+xdebug.max_nesting_level = 250
+xdebug.log = /tmp/xdebug.log

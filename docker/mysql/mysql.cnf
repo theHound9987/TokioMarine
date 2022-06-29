@@ -1,0 +1,26 @@
+##
+# This is a dev config only
+##
+
+[mysqld]
+# NETWORKING #
+max-connections                   = 500
+back-log                          = 500
+interactive-timeout               = 300
+wait-timeout                      = 14400
+
+# CACHES AND LIMITS #
+tmp-table-size                    = 32M
+max-heap-table-size               = 32M
+thread-cache-size                 = 100
+open-files-limit                  = 1024000
+table-definition-cache            = 4096
+table-open-cache                  = 4096
+join_buffer_size                  = 16M
+
+# INNODB #
+innodb-flush-method               = O_DIRECT
+innodb-file-per-table             = 1
+innodb-open-files                 = 500
+innodb-buffer-pool-size           = 1400M # ~70% of available memory in InnoDB deployments
+innodb-buffer-pool-instances      = 2

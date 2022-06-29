@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+if [ "$APP_ENV" = "prod" ] || [ "$APP_ENV" = "stg" ]; then
+  echo "Installing Production PHP Packages"
+  composer install --no-dev --no-interaction --no-scripts
+else
+  echo "Installing Development & Testing PHP Packages"
+  composer install --no-interaction --no-scripts
+fi
+if [ "$IS_LOCAL" != true ]; then
+  if [ "$APP_ENV" = "prod" ] || [ "$APP_ENV" = "stg" ]; then
+    composer dump-autoload --no-dev --optimize --classmap-authoritative
+  else
+    composer dump-autoload --optimize --classmap-authoritative
+  fi
+  composer dump-env "$APP_ENV"
+fi

@@ -1,0 +1,37 @@
+; this configures opcache for local usage
+zend_extension = opcache.so
+
+; enable Opcache
+opcache.enable = 1
+opcache.enable_cli = 1
+
+; maximum memory that OPcache can use to store compiled PHP files
+opcache.memory_consumption = 128
+
+; the amount of memory for interned strings in MBytes
+opcache.interned_strings_buffer = 16
+
+; maximum number of files that can be stored in the cache
+opcache.max_accelerated_files = 20000
+
+; Use the OPcache class preloading
+opcache.preload_user = app
+; disabled on local
+#opcache.preload = /app/config/preload.php
+
+; check or don’t check PHP file timestamps
+opcache.validate_timestamps = 1
+
+; maximum memory allocated to store the results
+realpath_cache_size = 4096K
+
+; save the results for 10 minutes (600 seconds)
+; disabled on local
+realpath_cache_ttl = 0
+
+; Copy PHP code into HUGE PAGES
+opcache.huge_code_pages = 1
+
+; Allow file existence override (file_exists, etc.) performance feature.
+; disabled on local
+opcache.enable_file_override = 0

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+exec 2>&1
+source /env
+
+rm -rf /tmp/dev /tmp/test /tmp/stg /tmp/prod
+exec php-fpm --nodaemonize

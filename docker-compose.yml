@@ -1,0 +1,96 @@
+version: '3.9'
+
+services:
+
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.4
+    # Enables the web UI and tells Traefik to listen to docker
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.http.address=:80" # THIS IS IMPORTANT
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  app:
+    container_name: symfony-starter
+    env_file:
+      - parameters.yml.dist
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: symfony-starter-local
+      args:
+        - APP_ENV=dev
+        - APP_HTTP_PORT=${APP_HTTP_PORT}
+        - BASE_DIR=/app
+        - DATABASE_HOST=${DATABASE_HOST}
+        - DATABASE_PORT=${DATABASE_PORT}
+        - IS_LOCAL=true
+        - YARN_CACHE_DIR=${BASE_DIR}/var/cache/yarn
+        - XDEBUG_LOG=/tmp/xdebug.log
+    healthcheck:
+      test: curl -s -o /dev/null http://localhost:8080 || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    restart: on-failure
+    volumes:
+      - ./src/backEnd/php/src:/app
+      - ./docker/app/config/php/conf.d/10-opcache.local.ini.dist:/usr/local/etc/php/conf.d/10-opcache.ini
+      - ./docker/app/config/php/conf.d/xdebug.ini.dist:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+    labels:
+      - "traefik.http.routers.laravel1.rule=Host(`laravel.docker.localhost`)"
+      - "traefik.enable=true"
+      - "traefik.http.routers.laravel1.entrypoints=http"
+    ports:
+      - "${APP_HTTP_PORT:-8002}:8080"
+    expose:
+      - 9000
+  mysql:
+    container_name: symfony-starter-db
+    build:
+      context: ./docker/mysql
+      args:
+        - APP_DB_PORT=${APP_DB_PORT}
+    env_file:
+      - parameters.yml.dist
+    environment:
+      - MYSQL_DATABASE=${DATABASE_NAME}
+      - MYSQL_USER=${DATABASE_USER}
+      - MYSQL_PASSWORD=${DATABASE_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD}
+      - MYSQL_ROOT_HOST=%
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "-p${DATABASE_ROOT_PASSWORD}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 50
+    restart: on-failure
+    volumes:
+      - ./docker/mysql/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+      - ./docker/mysql/initdb.d:/docker-entrypoint-initdb.d
+      - ~/symfony-starter-mysql:/var/lib/mysql:delegated
+    ports:
+      - "${APP_DB_PORT:-33067}:3306"
+
+  testfrontend:
+    image: "node:10"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./src/frontEnd/react/reactBasedService:/home/node/app
+    ports:
+      - 3000:3000
+    command: bash -c "npm install && npm start"

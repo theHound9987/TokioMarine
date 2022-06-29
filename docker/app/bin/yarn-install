@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+if [ "$APP_ENV" = "prod" ] || [ "$APP_ENV" = "stg" ]; then
+  echo "Installing Production NPM Packages"
+  yarn install --production=true --non-interactive --frozen-lockfile --cache-folder="${YARN_CACHE_DIR}"
+  yarn encore production
+else
+  echo "Installing Development & Testing NPM Packages"
+  yarn install --production=false --non-interactive --cache-folder="${YARN_CACHE_DIR}"
+  yarn encore dev
+fi
