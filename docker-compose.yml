@@ -50,9 +50,9 @@ services:
       - ./docker/app/config/php/conf.d/10-opcache.local.ini.dist:/usr/local/etc/php/conf.d/10-opcache.ini
       - ./docker/app/config/php/conf.d/xdebug.ini.dist:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
     labels:
-      - "traefik.http.routers.laravel1.rule=Host(`laravel.docker.localhost`)"
+      - "traefik.http.routers.react.rule=Host(`laravel.docker.localhost`)"
       - "traefik.enable=true"
-      - "traefik.http.routers.laravel1.entrypoints=http"
+      - "traefik.http.routers.react.entrypoints=http"
     ports:
       - "${APP_HTTP_PORT:-8002}:8080"
     expose:
@@ -72,12 +72,16 @@ services:
       - "8889:3306"
 
   testfrontend:
-    image: "node:10"
+    image: "node:14"
     working_dir: /home/node/app
     environment:
       - NODE_ENV=development
     volumes:
-      - ./src/frontEnd/react/reactBasedService:/home/node/app
+      - ./src/frontEnd/react/reactBasedService/tokio-marine:/home/node/app
     ports:
       - 3000:3000
     command: bash -c "npm install && npm start"
+    labels:
+      - "traefik.http.routers.laravel1.rule=Host(`react.docker.localhost`)"
+      - "traefik.enable=true"
+      - "traefik.http.routers.laravel1.entrypoints=http"
